@@ -1,34 +1,41 @@
 <setting>
-  <HcgPath></HcgPath>
+  <CheckVersion>0.9.5.6</CheckVersion>
+  <HcgPath>C:\CommentGenerator0.0.8a</HcgPath>
   <HandleVisible>1</HandleVisible>
-  <HandleOrder>0</HandleOrder>
+  <NoHandleType>1</NoHandleType>
   <Honorific>さん</Honorific>
-  <NoHandleType>0</NoHandleType>
-  <NoHandleName>名無し</NoHandleName>
+  <HandleOrder>0</HandleOrder>
+  <NoHandleName>
+  </NoHandleName>
   <TxtColor>ffffff</TxtColor>
-  <TxtFont>MS UI Gothic</TxtFont>
-  <TxtFontIndex>0</TxtFontIndex>
-  <TxtSize>18</TxtSize>
-  <BgColor>ffffff</BgColor>
+  <TxtFont>'Meiryo UI'</TxtFont>
+  <TxtFontIndex>287</TxtFontIndex>
+  <TxtSize>15</TxtSize>
+  <BgColor>000000</BgColor>
   <BgColorType>0</BgColorType>
   <TxtEdgeColor>000000</TxtEdgeColor>
   <TxtEdgeType>1</TxtEdgeType>
   <TxtEdgeValue>5</TxtEdgeValue>
-  <SkinType>0</SkinType>
-  <SkinFile>
-  </SkinFile>
+  <SkinType>1</SkinType>
+  <SkinFile>C:\CommentGenerator0.0.8a\skins\skins_00_basic.png</SkinFile>
   <SkinFolder>
   </SkinFolder>
   <TimeType>0</TimeType>
   <TimeValue>10</TimeValue>
-  <TxtUpSpace>8</TxtUpSpace>
-  <TxtLeftSpace>15</TxtLeftSpace>
-  <TxtLength>480</TxtLength>
-  <TxtLengthValue>（ｒｙ</TxtLengthValue>
-  <Direction>0</Direction>
+  <TxtUpSpace>5</TxtUpSpace>
+  <TxtLeftSpace>35</TxtLeftSpace>
+  <TxtLength>470</TxtLength>
+  <TxtLengthValue>...</TxtLengthValue>
+  <Direction>2</Direction>
   <OwnerCommentVisible>1</OwnerCommentVisible>
-  <SlashCommentVisible>1</SlashCommentVisible>
-  <BSPCommentVisible>1</BSPCommentVisible>
+  <SlashCommentVisible>0</SlashCommentVisible>
+  <BSPCommentVisible>0</BSPCommentVisible>
   <userBGColor>0</userBGColor>
   <userSkinName>0</userSkinName>
+  <nico_name Skin="C:\CommentGenerator0.0.8a\skins\skins_01_nico.png">
+  </nico_name>
+  <youtube_name Skin="C:\CommentGenerator0.0.8a\skins\skins_02_youtube.png">
+  </youtube_name>
+  <twitch_name Skin="C:\CommentGenerator0.0.8a\skins\skins_03_twitch.png">
+  </twitch_name>
 </setting>

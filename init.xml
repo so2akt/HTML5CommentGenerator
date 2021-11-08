@@ -1,0 +1,20 @@
+<setting>
+  <FrameRate>30</FrameRate>
+  <CanvasWidth>512</CanvasWidth>
+  <CanvasHeight>300</CanvasHeight>
+  <CommentMax>3</CommentMax>
+  <LoadInterbal>500</LoadInterbal>
+  <SkinHeight>32</SkinHeight>
+  <SkinWidth>512</SkinWidth>
+  <LineLimit>3</LineLimit>
+  <AnimeSpeed>0.5</AnimeSpeed>
+  <ComStart xml:space="preserve">:</ComStart>
+  <ComEnd>
+  </ComEnd>
+  <VL>0</VL>
+  <DemoMode>0</DemoMode>
+  <DemoKote>コテハン</DemoKote>
+  <DemoComment>コメント</DemoComment>
+  <DemoInterval>2000</DemoInterval>
+  <MoveSpeed>0.1</MoveSpeed>
+</setting>

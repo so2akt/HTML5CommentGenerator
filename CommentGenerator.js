@@ -201,7 +201,7 @@ function CommentGenerator(Handle, Comment, hcgFormat, txtFormat)
 			} else {
 				this.skinimage.x += ( 512 - this.skinimage.x ) * 0.1;
 				this.bgcolorbar.x += ( 512 - this.bgcolorbar.x ) * 0.1;
-				this.textedgecomment.x += ( 512 - this.textedgecomment.x ) * 0.1;
+				this.textedgecomment.x += ( 516 - this.textedgecomment.x ) * 0.1;
 				this.textcomment.x += ( 512 - this.textcomment.x ) * 0.1;
 			}
 		} else {
@@ -214,7 +214,7 @@ function CommentGenerator(Handle, Comment, hcgFormat, txtFormat)
 			} else {
 				this.skinimage.x += ( -512 - this.skinimage.x ) * 0.1;
 				this.bgcolorbar.x += ( -512 - this.bgcolorbar.x ) * 0.1;
-				this.textedgecomment.x += ( -512 - this.textedgecomment.x ) * 0.1;
+				this.textedgecomment.x += ( -516 - this.textedgecomment.x ) * 0.1;
 				this.textcomment.x += ( -512 - this.textcomment.x ) * 0.1;
 			}
 		}

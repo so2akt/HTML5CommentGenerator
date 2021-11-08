@@ -17,7 +17,7 @@
   <TxtEdgeType>1</TxtEdgeType>
   <TxtEdgeValue>5</TxtEdgeValue>
   <SkinType>1</SkinType>
-  <SkinFile>C:\CommentGenerator0.0.8a\skins\skins_00_basic.png</SkinFile>
+  <SkinFile>C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_00_basic.png</SkinFile>
   <SkinFolder>
   </SkinFolder>
   <TimeType>0</TimeType>
@@ -32,10 +32,10 @@
   <BSPCommentVisible>0</BSPCommentVisible>
   <userBGColor>0</userBGColor>
   <userSkinName>0</userSkinName>
-  <nico_name Skin="C:\CommentGenerator0.0.8a\skins\skins_01_nico.png">
+  <nico_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_01_nico.png">
   </nico_name>
-  <youtube_name Skin="C:\CommentGenerator0.0.8a\skins\skins_02_youtube.png">
+  <youtube_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_02_youtube.png">
   </youtube_name>
-  <twitch_name Skin="C:\CommentGenerator0.0.8a\skins\skins_03_twitch.png">
+  <twitch_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_03_twitch.png">
   </twitch_name>
 </setting>

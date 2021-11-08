@@ -1,34 +1,41 @@
 <setting>
-  <HcgPath></HcgPath>
+  <CheckVersion>0.9.5.6</CheckVersion>
+  <HcgPath>C:\comment-viewer-misc\HTML5CommentGenerator</HcgPath>
   <HandleVisible>1</HandleVisible>
-  <HandleOrder>0</HandleOrder>
+  <NoHandleType>1</NoHandleType>
   <Honorific>さん</Honorific>
-  <NoHandleType>0</NoHandleType>
-  <NoHandleName>名無し</NoHandleName>
+  <HandleOrder>0</HandleOrder>
+  <NoHandleName>
+  </NoHandleName>
   <TxtColor>ffffff</TxtColor>
-  <TxtFont>MS UI Gothic</TxtFont>
-  <TxtFontIndex>0</TxtFontIndex>
-  <TxtSize>18</TxtSize>
-  <BgColor>ffffff</BgColor>
+  <TxtFont>'Noto Sans JP'</TxtFont>
+  <TxtFontIndex>347</TxtFontIndex>
+  <TxtSize>25</TxtSize>
+  <BgColor>000000</BgColor>
   <BgColorType>0</BgColorType>
   <TxtEdgeColor>000000</TxtEdgeColor>
   <TxtEdgeType>1</TxtEdgeType>
-  <TxtEdgeValue>5</TxtEdgeValue>
-  <SkinType>0</SkinType>
-  <SkinFile>
-  </SkinFile>
+  <TxtEdgeValue>3</TxtEdgeValue>
+  <SkinType>1</SkinType>
+  <SkinFile>C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_01_nico.png</SkinFile>
   <SkinFolder>
   </SkinFolder>
-  <TimeType>0</TimeType>
+  <TimeType>1</TimeType>
   <TimeValue>10</TimeValue>
-  <TxtUpSpace>8</TxtUpSpace>
-  <TxtLeftSpace>15</TxtLeftSpace>
-  <TxtLength>480</TxtLength>
-  <TxtLengthValue>（ｒｙ</TxtLengthValue>
-  <Direction>0</Direction>
+  <TxtUpSpace>0</TxtUpSpace>
+  <TxtLeftSpace>35</TxtLeftSpace>
+  <TxtLength>265</TxtLength>
+  <TxtLengthValue>...</TxtLengthValue>
+  <Direction>2</Direction>
   <OwnerCommentVisible>1</OwnerCommentVisible>
-  <SlashCommentVisible>1</SlashCommentVisible>
-  <BSPCommentVisible>1</BSPCommentVisible>
+  <SlashCommentVisible>0</SlashCommentVisible>
+  <BSPCommentVisible>0</BSPCommentVisible>
   <userBGColor>0</userBGColor>
   <userSkinName>0</userSkinName>
+  <nico_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_01_nico_316x32.png">
+  </nico_name>
+  <youtube_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_02_youtube_316x32.png">
+  </youtube_name>
+  <twitch_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_03_twitch_316x32.png">
+  </twitch_name>
 </setting>

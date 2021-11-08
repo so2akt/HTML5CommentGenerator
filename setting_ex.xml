@@ -1,0 +1,46 @@
+<setting>
+  <exColor Area="0">0</exColor>
+  <ComToColor>0</ComToColor>
+  <ComCC>0</ComCC>
+  <OwnerReverse>0</OwnerReverse>
+  <yReverse>1</yReverse>
+  <TxtLine>0</TxtLine>
+  <Align>0</Align>
+  <NewLine>5</NewLine>
+  <NLset>0</NLset>
+  <CommentSpace>0</CommentSpace>
+  <LineHeight>5</LineHeight>
+  <TypeTime>0</TypeTime>
+  <OwnerColor>FFFFFF</OwnerColor>
+  <In X="0" Y="512">0.1</In>
+  <Tar X="0" Y="0">1</Tar>
+  <Out X="0" Y="0">0.1</Out>
+  <Move X="0" c_nlX="0" Y="32" c_nlY="0">0</Move>
+  <MovePattern>0</MovePattern>
+  <NewMove>0</NewMove>
+  <HandleLimit>265</HandleLimit>
+  <HandleTrim>…</HandleTrim>
+  <ComNL>1</ComNL>
+  <SiteName>-1</SiteName>
+  <SiteColor Area="0">0</SiteColor>
+  <Base_a>1</Base_a>
+  <A_area>0</A_area>
+  <F_in>0</F_in>
+  <F_out>0</F_out>
+  <F_in_k>1</F_in_k>
+  <F_out_k>1</F_out_k>
+  <Z_in>0</Z_in>
+  <Z_out>0</Z_out>
+  <Z_in_k>1</Z_in_k>
+  <Z_out_k>1</Z_out_k>
+  <TimeStamp>0</TimeStamp>
+  <Accel>
+  </Accel>
+  <Brake>
+  </Brake>
+  <Alpha_Sub>0</Alpha_Sub>
+  <Sub_a>0.33</Sub_a>
+  <Com_Align>00</Com_Align>
+  <Skin_Align>11</Skin_Align>
+  <Ang>0</Ang>
+</setting>

@@ -1,11 +1,13 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>HTML5 コメントジェネレーター</title>
-<!-- ver 0.0.8 -->
-<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<title>HTML5 コメントジェネレーター改0.95</title>
+<!-- Copyright (c) 2015 Takayasu Machimura (kilin)
+	 This software is released under the MIT License. -->
+<!-- ver 0.0.8改95 -->
+<script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="CommentGenerator.js"></script>
 
 <script>
@@ -34,23 +36,88 @@ createjs.Text.prototype.draw = function(ctx, ignoreCache) {
 function init() {
 	var HcgFormat = {};
 	var TxtFormat = new Object();
-	/************************************************/
-	createjs.Ticker.setFPS(30);
-	HcgFormat.CommentMax = 3;	//コメントの最大表示数 ここを4以上にしたらcanvasのheight値も変えること
-	HcgFormat.SkinHeight = 32;	//使用するスキンの高さ
-	var DemoMode  		 = 0;	//デモモード
-	/************************************************/
+	function InitLoad(){return new Promise(resolve => { $.ajax({
+		url: 'init.xml',
+		type: 'GET',
+		dataType: 'xml',
+		timeout: 5000,
+	  }).fail(function(){
+		/************************************************/
+		createjs.Ticker.framerate = 30; //フレームレート
+		HcgFormat.CanvasWidth = 512;	//キャンバスの横
+		HcgFormat.CanvasHeight = 300;	//キャンバスの縦
+		HcgFormat.CommentMax = 3;		//コメントの最大表示数 ここを4以上にしたらcanvasのCanvasHeight値も変えること
+		HcgFormat.SkinHeight = 32;		//使用するスキンの高さ
+		HcgFormat.SkinWidth = HcgFormat.CanvasWidth;		//使用するスキンの幅
+		HcgFormat.LineLimit = 1;		//改行の最大回数
+		HcgFormat.AnimeSpeed = 0.5;		//スキンをアニメーションする速度
+		/************************************************/
+		HcgFormat.ComStart=	 "「"	;	//コメントの始め(コテハンとの区切り)
+		HcgFormat.ComEnd=	 "」"	;	//コメントの終わり
+		/************************************************/
+		HcgFormat.VL = false;		//VL(ビュアーライク、コメビュ風)モード
+		/************************************************/
+		HcgFormat.DemoMode = 0;				//デモモード(1で開始)
+		HcgFormat.demokote = "コテハン";		//デモモードコテハン
+		HcgFormat.democomment = "コメント";	//デモモードコメント
+		HcgFormat.DemoInterbal= 2000;			//自動コメント間隔(ミリ秒)
+		/************************************************/
+		HcgFormat.LoadInterbal = 500;	//読み込みの間隔(ミリ秒)
+		HcgFormat.MoveSpeed = 0.1;		//移動時に使う係数
+		/************************************************/
+		console.log("init.xml:ロード失敗、CommentGenerator.htmlの設定を使用します");
+		resolve();
+	  }).done(function(xml) {
+		createjs.Ticker.framerate = Number(xml.getElementsByTagName('FrameRate')[0].firstChild.nodeValue);
+		HcgFormat.CanvasWidth = Number(xml.getElementsByTagName('CanvasWidth')[0].firstChild.nodeValue);
+		HcgFormat.CanvasHeight = Number(xml.getElementsByTagName('CanvasHeight')[0].firstChild.nodeValue);
+		HcgFormat.CommentMax = Number(xml.getElementsByTagName('CommentMax')[0].firstChild.nodeValue);
+		HcgFormat.LoadInterbal = (xml.getElementsByTagName('LoadInterbal')[0])?Number(xml.getElementsByTagName('LoadInterbal')[0].firstChild.nodeValue):500;
+		HcgFormat.SkinHeight = Number(xml.getElementsByTagName('SkinHeight')[0].firstChild.nodeValue);
+		if(xml.getElementsByTagName('SkinWidth')[0]!=null){
+			HcgFormat.SkinWidth = (xml.getElementsByTagName('SkinWidth')[0].firstChild.nodeValue.match(/^([\s\0]+$|fix)/i))?"FIX":Number(xml.getElementsByTagName('SkinWidth')[0].firstChild.nodeValue);
+		}else{
+			HcgFormat.SkinWidth = HcgFormat.CanvasWidth;
+		}
+		HcgFormat.LineLimit = Number(xml.getElementsByTagName('LineLimit')[0].firstChild.nodeValue);
+		HcgFormat.AnimeSpeed = Number(xml.getElementsByTagName('AnimeSpeed')[0].firstChild.nodeValue);
+		HcgFormat.ComStart= (xml.getElementsByTagName('ComStart')[0].firstChild.nodeValue.match(/^\n[\s\0]+$/))?"\n\t":xml.getElementsByTagName('ComStart')[0].firstChild.nodeValue;
+		HcgFormat.ComEnd=(xml.getElementsByTagName('ComEnd')[0].firstChild.nodeValue.match(/^[\s\0]+$/))? "":xml.getElementsByTagName('ComEnd')[0].firstChild.nodeValue;
+		HcgFormat.VL = (xml.getElementsByTagName('VL')[0])?xml.getElementsByTagName('VL')[0].firstChild.nodeValue=='1':false;
+		HcgFormat.DemoMode = xml.getElementsByTagName('DemoMode')[0].firstChild.nodeValue=='1';
+		HcgFormat.demokote = xml.getElementsByTagName('DemoKote')[0].firstChild.nodeValue;
+		HcgFormat.democomment = xml.getElementsByTagName('DemoComment')[0].firstChild.nodeValue;
+		HcgFormat.DemoInterbal= Number(xml.getElementsByTagName('DemoInterval')[0].firstChild.nodeValue);
+		HcgFormat.MoveSpeed = Number(xml.getElementsByTagName('MoveSpeed')[0].firstChild.nodeValue);
+		console.log("init.xml:ロード成功");
+		resolve();
+	  })
+	})};
+	InitLoad().then(()=>{
 	var stage = new createjs.Stage("canvas");
+	stage.canvas.width = HcgFormat['CanvasWidth'];
+	stage.canvas.height = HcgFormat['CanvasHeight'];
+	stage.update();
 	var obj = [];
 	var startTime = Math.floor(new Date().getTime()/1000);
-	var startNo   = -1;
+	var startNo   = -10;
+	var no_ch = 0;
 	var CommentNow = 0;
 	var SettingLoaded = false;
+	var CommentWait = false;
 	var FullPath = location.href;
 	var PathArray = FullPath.split('/');
 	var PathHead = "";
+	var txtFormat;
+	var exFormat;
+	var date1;
+	var date2;
+	var neta_name;
+	var nowCount = 0;
 	if(PathArray[2] == "absolute") {
 		PathHead = "http://absolute/";
+	} else if(PathArray[0] == "file:"){
+		PathHead = "file:///";
 	} else {
 		PathHead = "";
 	}
@@ -60,20 +127,20 @@ function init() {
 		CurrentPath += PathArray[i] + "/";
 	}
 	HcgFormat.CurrentPath = CurrentPath;
-	
+
 	createjs.Ticker.addEventListener('tick', mainLoop);
 	function mainLoop() {
 		stage.update();
 	}
-	
 	SettingFunc();
-	var SettingTimer = setInterval(SettingFunc, 5000);
-	if(DemoMode) {
+	HcgFormat['FrameRate']=createjs.Ticker.framerate;
+	var SettingTimer = setInterval(SettingFunc, 15000);
+	if(HcgFormat.DemoMode) {
 		console.log("デモモード");
-		var DemoTimer = setInterval(DemoFunc, 5000);
+		var DemoTimer = setInterval(DemoFunc, HcgFormat.DemoInterbal);
 	} else {
 		console.log("HTML5コメントジェネレーター");
-		var CommentTimer = setInterval(CommentFunc, 500);
+		var CommentTimer = setInterval(CommentFunc, HcgFormat.LoadInterbal);
 	}
 	
 	//コメント(XML)を読んでコメントジェネレーターに渡す
@@ -82,10 +149,6 @@ function init() {
 			//XML読み込み
 			$(function(){
 				parse();
-				$("#select_game").change(function() {
-					var result = $(this).val();
-					parse(result);
-				});
 			});
 			function parse(type) {
 				$.ajax({
@@ -93,63 +156,157 @@ function init() {
 					type: 'GET',
 					dataType: 'xml',
 					timeout: 5000,
-					success:function(xml) {
-						xml = xml.getElementsByTagName('comment');
-						for(var i=0; i<xml.length; i++) {
-							if((startTime < xml[i].getAttributeNode("time").value) ||
-							((startTime == xml[i].getAttributeNode("time").value) && (startNo < xml[i].getAttributeNode("no").value))) {
-								startTime = xml[i].getAttributeNode("time").value;
-								startNo   = xml[i].getAttributeNode("no").value;
-								var SlashComment = TxtFormat['SlashCommentVisible'];
-								var BSPComment = TxtFormat['BSPCommentVisible'];
-								var OwnerComment = TxtFormat['OwnerCommentVisible'];
-								if(isComment(xml[i].firstChild.nodeValue, SlashComment, BSPComment)) {
-									if(OwnerComment==1 || ((OwnerComment==0)&&(xml[i].getAttributeNode("owner").value!=1))) {
-										var handle="";
-										if(xml[i].getAttributeNode("handle") != null) {
+				  }).done(function(xml) {
+					xml = xml.getElementsByTagName('comment');
+					if(no_ch>xml.length){
+						no_ch=0;
+					}
+					for(var i=no_ch; i<xml.length; i++) {
+						if((startTime < xml[i].getAttributeNode("time").value) ||
+						((startTime == xml[i].getAttributeNode("time").value) && ((startNo < xml[i].getAttributeNode("no").value) || (no_ch < i)))) {
+							startTime = xml[i].getAttributeNode("time").value;
+							startNo   = xml[i].getAttributeNode("no").value;
+							no_ch = i;
+							var SlashComment = TxtFormat['SlashCommentVisible'];
+							var BSPComment = TxtFormat['BSPCommentVisible'];
+							var OwnerComment = TxtFormat['OwnerCommentVisible'];
+							if(isComment(xml[i].firstChild.nodeValue, SlashComment, BSPComment)) {
+								if(OwnerComment==1 || ((OwnerComment==0)&&(xml[i].getAttributeNode("owner").value!=1))) {
+									//事前処理
+									var handle="";
+									if(xml[i].getAttributeNode("handle") != null) {
+										if(xml[i].getAttributeNode("handle").value == ""){
+											handle = TxtFormat['NoHandleName'];
+										}else{
 											handle = xml[i].getAttributeNode("handle").value;
-										} else {
-											if(xml[i].getAttributeNode("no") != null) {
-												if(TxtFormat['NoHandleType']==0) {
-													handle = xml[i].getAttributeNode("no").value+"コメ";
-												} else if(TxtFormat['NoHandleType']==1) {
-													handle = TxtFormat['NoHandleName'];
+										}
+									} else {
+										if(xml[i].getAttributeNode("no") != null) {
+											if(TxtFormat['NoHandleType']==0) {
+												handle = xml[i].getAttributeNode("no").value+"コメ";
+											} else if(TxtFormat['NoHandleType']==1) {
+												handle = TxtFormat['NoHandleName'];
+											} else if((TxtFormat['NoHandleType']==2)&&(xml[i].getAttributeNode("owner").value==0)) {
+												return;
+											}
+										}
+									}
+									console.log(xml[i].firstChild.nodeValue);
+									//本編
+									new CommentGenerator(handle, fixComment(xml[i].firstChild.nodeValue), HcgFormat, TxtFormat, (xml[i].getAttributeNode("owner")) ? xml[i].getAttributeNode("owner").value : false, null, new Date((xml[i].getAttributeNode("time").value.length==10)?xml[i].getAttributeNode("time").value*1000:Number(xml[i].getAttributeNode("time").value.substr(0,13))))
+									  .then((CGen)=>{
+										obj[CommentNow] = CGen;
+										//表示開始
+										stage.addChild(obj[CommentNow].getBase());
+										obj[CommentNow].Play();
+										//移動処理
+										if(!TxtFormat['NewMove']){//通常
+											if ((TxtFormat['Direction'] == 3)&&(TxtFormat['moveF'] != '0')){
+												var Xmove = Number(TxtFormat['moveX']) * (1 + (Number(TxtFormat['c_nlX']) * obj[CommentNow].getLongline()));
+												var Ymove = Number(TxtFormat['moveY']) * (1 + (Number(TxtFormat['c_nlY']) * obj[CommentNow].getLongline()))+Number(TxtFormat['comSpace']);
+											}else{
+												var Xmove = 0;
+												if(TxtFormat['newLine'] == 4){
+													var Ymove = obj[CommentNow].textcomment.lineHeight*(1+obj[CommentNow].getLongline())+Number(TxtFormat['comSpace']);
+												}else if(TxtFormat['newLine'] == 5){
+													var Ymove = Number(HcgFormat['SkinHeight'])*(1+obj[CommentNow].getLongline())+Number(TxtFormat['comSpace']);
+												}else{
+													var Ymove = Number(HcgFormat['SkinHeight'])+Number(TxtFormat['comSpace']);
 												}
 											}
-										}
-										console.log(xml[i].firstChild.nodeValue);
-										var CGen = new CommentGenerator(handle, fixComment(xml[i].firstChild.nodeValue), HcgFormat, TxtFormat);
-										obj[CommentNow] = CGen;
-										obj[CommentNow].y = HcgFormat['SkinHeight']*(HcgFormat['CommentMax']-1);
-										stage.addChild(obj[CommentNow].getSkinImage());
-										stage.addChild(obj[CommentNow].getBGColorBar());
-										stage.addChild(obj[CommentNow].getEdgeCommentText());
-										stage.addChild(obj[CommentNow].getCommentText());
-										for(var i=CommentNow; i>(CommentNow-(HcgFormat['CommentMax']-1)); i--) {
-											if((i-1)>=0) {
-												obj[(i-1)].getSkinImage().y -= HcgFormat['SkinHeight'];
-												obj[(i-1)].getBGColorBar().y -= HcgFormat['SkinHeight'];
-												obj[(i-1)].getEdgeCommentText().y -= HcgFormat['SkinHeight'];
-												obj[(i-1)].getCommentText().y -= HcgFormat['SkinHeight'];
+											for(var i=CommentNow; i>(CommentNow-(HcgFormat['CommentMax']-1)); i--) {
+												if((i-1)>=0&&obj[(i-1)]!=null) {
+													if(TxtFormat['floated'] == 1){
+														if((TxtFormat['yReverse'] == 0)&&((TxtFormat['Direction'] != 3)||((TxtFormat['Direction'] == 3)&&(TxtFormat['moveF'] == '0')))){
+
+															obj[(i-1)].MoveAdd(Xmove, -Ymove, TxtFormat);
+														}else{
+															obj[(i-1)].MoveAdd(Xmove, Ymove, TxtFormat);
+														}
+													}else{
+														if(TxtFormat['yReverse'] == 0){
+															obj[(i-1)].PlateMove(Xmove, -Ymove);
+														}else{
+															obj[(i-1)].PlateMove(Xmove, Ymove);
+														}
+													}
+													if(TxtFormat['Alpha_Sub']){
+														if(TxtFormat['Direction'] != 3){
+															obj[i-1].SubAlpha(((TxtFormat['A_area']==0)?TxtFormat['Base_a']:100)/HcgFormat['CommentMax']);
+														}else{
+															obj[i-1].SubAlpha(TxtFormat['Sub_a']);
+														}
+													}
+												}
+											}
+										}else{//新しいコメントの方を移動
+											nowCount++;
+											if ((TxtFormat['Direction'] == 3)&&(TxtFormat['moveF'] != '0')){
+												var Xmove = Number(TxtFormat['moveX']) * (1 + (Number(TxtFormat['c_nlX']) * obj[CommentNow].getLongline()));
+												var Ymove = Number(TxtFormat['moveY']) * (1 + (Number(TxtFormat['c_nlY']) * obj[CommentNow].getLongline()))+Number(TxtFormat['comSpace']);
+												if(TxtFormat['Alpha_Sub']){
+													for(i=1;i<nowCount;i++){
+														obj[CommentNow-i].SubAlpha(((TxtFormat['A_area']==0)?TxtFormat['Base_a']:100)/HcgFormat['CommentMax']);
+													}
+												}
+											}else{
+												var Xmove = 0;
+												var bufline=0;
+												for(i=1;i<nowCount;i++){
+													bufline+=obj[CommentNow-i].getLongline()+1;
+													if(TxtFormat['Alpha_Sub']){
+														obj[CommentNow-i].SubAlpha(TxtFormat['Sub_a']);
+													}
+												}
+												if(TxtFormat['newLine'] == 4){
+													var Ymove = obj[CommentNow].textcomment.lineHeight*bufline+Number(TxtFormat['comSpace']);
+												}else if(TxtFormat['newLine'] == 5){
+													var Ymove = Number(HcgFormat['SkinHeight'])*(bufline)+Number(TxtFormat['comSpace']);
+												}else{
+													var Ymove = Number(HcgFormat['SkinHeight'])*(bufline)+Number(TxtFormat['comSpace']);
+												}
+											}
+											if(((TxtFormat['floated'] == 1)&&(TxtFormat['yReverse'] == 0)&&(TxtFormat['MoveF'] != 3))
+											  ||((TxtFormat['floated'] == 0)&&(TxtFormat['yReverse'] == 0))){
+												Ymove*=-1;
+											}
+											if((obj[CommentNow].getBline()+Ymove+Number(HcgFormat['SkinHeight'])*(Ymove>0?obj[CommentNow].getLongline()+1:-(obj[CommentNow].getLongline()+1))>HcgFormat['CanvasHeight'])||(obj[CommentNow].getBline()+Ymove<0)){
+												nowCount=1;
+												Ymove=0;
+											}
+											if(TxtFormat['floated'] == 1){
+												obj[CommentNow].MoveAdd(Xmove, Ymove, TxtFormat);
+											}else{
+												obj[CommentNow].PlateMove(Xmove, Ymove);
 											}
 										}
-								
+										//削除処理
+										if(TxtFormat['TimeType'] != 1){
+											obj[CommentNow].setTimer(setTimeout(function(num){objDel(num)}.bind(null, CommentNow),(Number(TxtFormat['TimeValue'])+((((TxtFormat['F_out']==1)||(TxtFormat['Z_out']>0)||(TxtFormat['Direction']!=2))*3)*(30/HcgFormat['FrameRate'])*((0.1/Number((TxtFormat['Direction']=='3')?TxtFormat['outK']:HcgFormat['MoveSpeed']))*(TxtFormat['MovePattern']!=2)?1:2)))*1000));
+										}
+
 										if((CommentNow-HcgFormat['CommentMax'])>=0) {
-											stage.removeChild(obj[(CommentNow-HcgFormat['CommentMax'])].getSkinImage());
-											stage.removeChild(obj[(CommentNow-HcgFormat['CommentMax'])].getBGColorBar());
-											stage.removeChild(obj[(CommentNow-HcgFormat['CommentMax'])].getEdgeCommentText());
-											stage.removeChild(obj[(CommentNow-HcgFormat['CommentMax'])].getCommentText());
-											delete obj[(CommentNow-HcgFormat['CommentMax'])];
+											if(obj[(CommentNow-HcgFormat['CommentMax'])]!=null){
+												clearTimeout(obj[(CommentNow-HcgFormat['CommentMax'])].getTimer());
+												objDel(CommentNow-HcgFormat['CommentMax']);
+											}
 										}
 										CommentNow++;
-									}
+									});
 								}
-								break;
 							}
+							break;
 						}
-					},
-					error:function() {
-						alert("ロード失敗");
+					}
+					if(startNo == -10){
+						startNo = -11;
+					}
+				  }).fail(function(){
+					if(startNo==-10&&CommentWait){
+						CommentWait = false;
+						alert("comment.xml:ロード失敗");
+					}else{
+						console.log("comment.xml:ロード失敗");
 					}
 				});
 			}
@@ -160,61 +317,180 @@ function init() {
 		//XML読み込み
 		$(function(){
 			parse();
-			
-			$("#select_game").change(function() {
-				var result = $(this).val();
-				parse(result);
-			});
 		});
-		function parse(type) {
-			$.ajax({
-				url: 'setting.xml',
-				type: 'GET',
-				dataType: 'xml',
-				timeout: 5000,
-				success:function(xml) {
-					var skinfile = "";
-					var skinfolder = "";
-					if(xml.getElementsByTagName('SkinFile')[0].firstChild != null) {
-						skinfile = xml.getElementsByTagName('SkinFile')[0].firstChild.nodeValue;
+		function parse(type) {//setting.xml読み込み
+			var setlist = [];
+			function setaj1(){
+				var d = new $.Deferred();
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', 'setting.xml', true);
+				xhr.onload = function(){
+					if(xhr.responseXML.lastModified != date1){
+						var xml = xhr.responseXML.documentElement;
+						var skinfile = "";
+						var skinfolder = "";
+						if(xml.getElementsByTagName('SkinFile')[0].firstChild != null) {
+							skinfile = xml.getElementsByTagName('SkinFile')[0].firstChild.nodeValue;
+						}
+						if(xml.getElementsByTagName('SkinFolder')[0].firstChild != null) {
+							skinfolder = xml.getElementsByTagName('SkinFolder')[0].firstChild.nodeValue;
+						}
+						txtFormat = {
+							'HandleVisible' : xml.getElementsByTagName('HandleVisible')[0].firstChild.nodeValue,
+							'HandleOrder' : xml.getElementsByTagName('HandleOrder')[0].firstChild.nodeValue,
+							'Honorific' : xml.getElementsByTagName('Honorific')[0].firstChild.nodeValue,
+							'NoHandleType' : xml.getElementsByTagName('NoHandleType')[0].firstChild.nodeValue,
+							'NoHandleName' : xml.getElementsByTagName('NoHandleName')[0].firstChild.nodeValue,
+							'TxtColor' : xml.getElementsByTagName('TxtColor')[0].firstChild.nodeValue,
+							'TxtFont' : xml.getElementsByTagName('TxtFont')[0].firstChild.nodeValue,
+							'TxtSize' : xml.getElementsByTagName('TxtSize')[0].firstChild.nodeValue,
+							'BgColor' : xml.getElementsByTagName('BgColor')[0].firstChild.nodeValue,
+							'BgColorType' : xml.getElementsByTagName('BgColorType')[0].firstChild.nodeValue,
+							'TxtEdgeColor' : xml.getElementsByTagName('TxtEdgeColor')[0].firstChild.nodeValue,
+							'TxtEdgeType' : xml.getElementsByTagName('TxtEdgeType')[0].firstChild.nodeValue,
+							'TxtEdgeValue' : xml.getElementsByTagName('TxtEdgeValue')[0].firstChild.nodeValue,
+							'SkinType' : xml.getElementsByTagName('SkinType')[0].firstChild.nodeValue,
+							'SkinFile' : skinfile,
+							'SkinFolder' : skinfolder,
+							'TimeType' : xml.getElementsByTagName('TimeType')[0].firstChild.nodeValue,
+							'TimeValue' : xml.getElementsByTagName('TimeValue')[0].firstChild.nodeValue,
+							'TxtUpSpace' : xml.getElementsByTagName('TxtUpSpace')[0].firstChild.nodeValue,
+							'TxtLeftSpace' : xml.getElementsByTagName('TxtLeftSpace')[0].firstChild.nodeValue,
+							'TxtLength' : xml.getElementsByTagName('TxtLength')[0].firstChild.nodeValue,
+							'TxtLengthValue' : xml.getElementsByTagName('TxtLengthValue')[0].firstChild.nodeValue,
+							'OwnerCommentVisible' : xml.getElementsByTagName('OwnerCommentVisible')[0].firstChild.nodeValue,
+							'SlashCommentVisible' : xml.getElementsByTagName('SlashCommentVisible')[0].firstChild.nodeValue,
+							'BSPCommentVisible' : xml.getElementsByTagName('BSPCommentVisible')[0].firstChild.nodeValue,
+							'Direction' : xml.getElementsByTagName('Direction')[0].firstChild.nodeValue,
+							'userBGColor' : xml.getElementsByTagName('userBGColor')[0].firstChild.nodeValue,
+							'userSkinName' : xml.getElementsByTagName('userSkinName')[0].firstChild.nodeValue,
+
+							'Nico' : (xml.getElementsByTagName('nico_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('nico_name')[0]):null,
+							'YouTube' : (xml.getElementsByTagName('youtube_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('youtube_name')[0]):null,
+							'Twitch' : (xml.getElementsByTagName('twitch_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('twitch_name')[0]):null,
+							'Openrec' : (xml.getElementsByTagName('openrec_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('openrec_name')[0]):null,
+							'Twicas' : (xml.getElementsByTagName('twicas_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('twicas_name')[0]):null,
+							'Mirrativ' : (xml.getElementsByTagName('mirrativ_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('mirrativ_name')[0]):null,
+							'LineLive' : (xml.getElementsByTagName('linelive_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('linelive_name')[0]):null,
+							'Whowatch' : (xml.getElementsByTagName('whowatch_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('whowatch_name')[0]):null,
+							'Mildom' : (xml.getElementsByTagName('mildom_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('mildom_name')[0]):null,
+							'Bigo' : (xml.getElementsByTagName('bigo_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('bigo_name')[0]):null,
+							'BouyomiChan' : (xml.getElementsByTagName('bouyomichan_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('bouyomichan_name')[0]):null,
+							'Nothing' : (xml.getElementsByTagName('nothing_name')[0]!=null)?new SiteSet(xml.getElementsByTagName('nothing_name')[0]):null,
+							'Date1' : xhr.responseXML.lastModified
+						};
+						d.resolve();
+					}else{
+						if(exFormat==null){
+							console.log("setting.xml:ロード失敗");
+							d.reject();
+						}else{
+							d.resolve();
+						}
 					}
-					if(xml.getElementsByTagName('SkinFolder')[0].firstChild != null) {
-						skinfolder = xml.getElementsByTagName('SkinFolder')[0].firstChild.nodeValue;
+				}
+				xhr.send();
+				return d.promise();
+			};
+			setlist.push(setaj1());
+			function setaj2(){//setting_ex.xml読み込み
+				var d = new $.Deferred();
+				var xhr = new XMLHttpRequest();
+				xhr.open('GET', 'setting_ex.xml', true);
+				xhr.onload = function(){
+					if(xhr.responseXML.lastModified != date2){
+						var xml = xhr.responseXML.documentElement;
+						exFormat = {
+							'exColor' : xml.getElementsByTagName('exColor')[0].firstChild.nodeValue,
+							'exColorArea' : (xml.getElementsByTagName('exColor')[0].getAttributeNode('Area'))?xml.getElementsByTagName('exColor')[0].getAttributeNode('Area').value:0,
+							'comToColor' : xml.getElementsByTagName('ComToColor')[0].firstChild.nodeValue,
+							'comCC' : xml.getElementsByTagName('ComCC')[0].firstChild.nodeValue,
+							'ownerReverse' : xml.getElementsByTagName('OwnerReverse')[0].firstChild.nodeValue,
+							'yReverse' : xml.getElementsByTagName('yReverse')[0].firstChild.nodeValue,
+							'Align' : (xml.getElementsByTagName('Align')[0])?xml.getElementsByTagName('Align')[0].firstChild.nodeValue=='1':false,
+							'txtLine' : xml.getElementsByTagName('TxtLine')[0].firstChild.nodeValue,
+							'newLine' : xml.getElementsByTagName('NewLine')[0].firstChild.nodeValue,
+							'NLset' : (xml.getElementsByTagName('NLset')[0])?xml.getElementsByTagName('NLset')[0].firstChild.nodeValue:'0',
+							'comSpace' : xml.getElementsByTagName('CommentSpace')[0].firstChild.nodeValue,
+							'lineHeight' : xml.getElementsByTagName('LineHeight')[0].firstChild.nodeValue,
+							'ownerColor' : xml.getElementsByTagName('OwnerColor')[0].firstChild.nodeValue,
+							'typeTime' : xml.getElementsByTagName('TypeTime')[0].firstChild.nodeValue,
+							'inX' : xml.getElementsByTagName('In')[0].getAttributeNode('X').value,
+							'inY' : xml.getElementsByTagName('In')[0].getAttributeNode('Y').value,
+							'targetX' : xml.getElementsByTagName('Tar')[0].getAttributeNode('X').value,
+							'targetY' : xml.getElementsByTagName('Tar')[0].getAttributeNode('Y').value,
+							'outX' : xml.getElementsByTagName('Out')[0].getAttributeNode('X').value,
+							'outY' : xml.getElementsByTagName('Out')[0].getAttributeNode('Y').value,
+							'inK' : xml.getElementsByTagName('In')[0].firstChild.nodeValue,
+							'outK' : xml.getElementsByTagName('Out')[0].firstChild.nodeValue,
+							'Ang' : (xml.getElementsByTagName('Ang')[0])?xml.getElementsByTagName('Ang')[0].firstChild.nodeValue=='1':false,
+							'moveX' : xml.getElementsByTagName('Move')[0].getAttributeNode('X').value,
+							'c_nlX' : (xml.getElementsByTagName('Move')[0].getAttributeNode('c_nlX'))?xml.getElementsByTagName('Move')[0].getAttributeNode('c_nlX').value:0,
+							'moveY' : xml.getElementsByTagName('Move')[0].getAttributeNode('Y').value,
+							'c_nlY' : (xml.getElementsByTagName('Move')[0].getAttributeNode('c_nlY'))?xml.getElementsByTagName('Move')[0].getAttributeNode('c_nlY').value:0,
+							'moveF' : xml.getElementsByTagName('Move')[0].firstChild.nodeValue,
+							'floated' : xml.getElementsByTagName('Tar')[0].firstChild.nodeValue,
+							'NewMove' : (xml.getElementsByTagName('NewMove')[0])?xml.getElementsByTagName('NewMove')[0].firstChild.nodeValue=='1':false,
+							'HandleLimit' : xml.getElementsByTagName('HandleLimit')[0].firstChild.nodeValue,
+							'HandleTrim' : xml.getElementsByTagName('HandleTrim')[0].firstChild.nodeValue,
+							'ComNL' : xml.getElementsByTagName('ComNL')[0].firstChild.nodeValue,
+							'TimeStamp' : xml.getElementsByTagName('TimeStamp')[0].firstChild.nodeValue,
+							'SiteColor' : xml.getElementsByTagName('SiteColor')[0].firstChild.nodeValue,
+							'Base_a' : (xml.getElementsByTagName('Base_a')[0])?xml.getElementsByTagName('Base_a')[0].firstChild.nodeValue:1,
+							'A_area' : (xml.getElementsByTagName('A_area')[0])?xml.getElementsByTagName('A_area')[0].firstChild.nodeValue:0,
+							'F_in' : (xml.getElementsByTagName('F_in')[0])?xml.getElementsByTagName('F_in')[0].firstChild.nodeValue=='1':false,
+							'F_out' : (xml.getElementsByTagName('F_out')[0])?xml.getElementsByTagName('F_out')[0].firstChild.nodeValue=='1':false,
+							'F_in_k' : (xml.getElementsByTagName('F_in_k')[0])?xml.getElementsByTagName('F_in_k')[0].firstChild.nodeValue:1,
+							'F_out_k' : (xml.getElementsByTagName('F_out_k')[0])?xml.getElementsByTagName('F_out_k')[0].firstChild.nodeValue:1,
+							'Z_in' : (xml.getElementsByTagName('Z_in')[0])?Number(xml.getElementsByTagName('Z_in')[0].firstChild.nodeValue):0,
+							'Z_out' : (xml.getElementsByTagName('Z_out')[0])?Number(xml.getElementsByTagName('Z_out')[0].firstChild.nodeValue):0,
+							'Z_in_k' : (xml.getElementsByTagName('Z_in_k')[0])?xml.getElementsByTagName('Z_in_k')[0].firstChild.nodeValue:1,
+							'Z_out_k' : (xml.getElementsByTagName('Z_out_k')[0])?xml.getElementsByTagName('Z_out_k')[0].firstChild.nodeValue:1,
+							'MovePattern' : (xml.getElementsByTagName('MovePattern')[0])?Number(xml.getElementsByTagName('MovePattern')[0].firstChild.nodeValue):0,
+							'NewMove' : (xml.getElementsByTagName('NewMove')[0])?xml.getElementsByTagName('NewMove')[0].firstChild.nodeValue=='1':false,
+							'HandleLimit' : xml.getElementsByTagName('HandleLimit')[0].firstChild.nodeValue,
+							'HandleTrim' : xml.getElementsByTagName('HandleTrim')[0].firstChild.nodeValue,
+							'ComNL' : xml.getElementsByTagName('ComNL')[0].firstChild.nodeValue,
+							'TimeStamp' : xml.getElementsByTagName('TimeStamp')[0].firstChild.nodeValue,
+							'SiteName' : (xml.getElementsByTagName('SiteName')[0])?xml.getElementsByTagName('SiteName')[0].firstChild.nodeValue:'1',
+							'SiteColor' : xml.getElementsByTagName('SiteColor')[0].firstChild.nodeValue,
+							'SiteColorArea' : (xml.getElementsByTagName('SiteColor')[0].getAttributeNode('Area'))?xml.getElementsByTagName('SiteColor')[0].getAttributeNode('Area').value:0,
+							'Base_a' : (xml.getElementsByTagName('Base_a')[0])?xml.getElementsByTagName('Base_a')[0].firstChild.nodeValue:1,
+							'A_area' : (xml.getElementsByTagName('A_area')[0])?xml.getElementsByTagName('A_area')[0].firstChild.nodeValue:0,
+							'Accel' : (xml.getElementsByTagName('Accel')[0])?Number(xml.getElementsByTagName('Accel')[0].firstChild.nodeValue):20,
+							'Brake' : (xml.getElementsByTagName('Brake')[0])?Number(xml.getElementsByTagName('Brake')[0].firstChild.nodeValue):50,
+							'Alpha_Sub' : (xml.getElementsByTagName('Alpha_Sub')[0])?xml.getElementsByTagName('Alpha_Sub')[0].firstChild.nodeValue=='1':false,
+							'Sub_a' : (xml.getElementsByTagName('Sub_a')[0])?Number(xml.getElementsByTagName('Sub_a')[0].firstChild.nodeValue):0.33,
+							'Skin_Align' : (xml.getElementsByTagName('Skin_Align')[0])?xml.getElementsByTagName('Skin_Align')[0].firstChild.nodeValue:'00',
+							'Com_Align' : (xml.getElementsByTagName('Com_Align')[0])?xml.getElementsByTagName('Com_Align')[0].firstChild.nodeValue:'22',
+
+							'Date2' : xhr.responseXML.lastModified
+						};
+						d.resolve();
+					}else{
+						if(exFormat==null){
+							console.log("追加設定のロード失敗");
+							d.reject();
+						}else{
+							d.resolve();
+						}
 					}
-					var txtFormat = {
-						'HandleVisible' : xml.getElementsByTagName('HandleVisible')[0].firstChild.nodeValue,
-						'HandleOrder' : xml.getElementsByTagName('HandleOrder')[0].firstChild.nodeValue,
-						'Honorific' : xml.getElementsByTagName('Honorific')[0].firstChild.nodeValue,
-						'NoHandleType' : xml.getElementsByTagName('NoHandleType')[0].firstChild.nodeValue,
-						'NoHandleName' : xml.getElementsByTagName('NoHandleName')[0].firstChild.nodeValue,
-						'TxtColor' : xml.getElementsByTagName('TxtColor')[0].firstChild.nodeValue,
-						'TxtFont' : xml.getElementsByTagName('TxtFont')[0].firstChild.nodeValue,
-						'TxtSize' : xml.getElementsByTagName('TxtSize')[0].firstChild.nodeValue,
-						'BgColor' : xml.getElementsByTagName('BgColor')[0].firstChild.nodeValue,
-						'BgColorType' : xml.getElementsByTagName('BgColorType')[0].firstChild.nodeValue,
-						'TxtEdgeColor' : xml.getElementsByTagName('TxtEdgeColor')[0].firstChild.nodeValue,
-						'TxtEdgeType' : xml.getElementsByTagName('TxtEdgeType')[0].firstChild.nodeValue,
-						'TxtEdgeValue' : xml.getElementsByTagName('TxtEdgeValue')[0].firstChild.nodeValue,
-						'SkinType' : xml.getElementsByTagName('SkinType')[0].firstChild.nodeValue,
-						'SkinFile' : skinfile,
-						'SkinFolder' : skinfolder,
-						'TimeType' : xml.getElementsByTagName('TimeType')[0].firstChild.nodeValue,
-						'TimeValue' : xml.getElementsByTagName('TimeValue')[0].firstChild.nodeValue,
-						'TxtUpSpace' : xml.getElementsByTagName('TxtUpSpace')[0].firstChild.nodeValue,
-						'TxtLeftSpace' : xml.getElementsByTagName('TxtLeftSpace')[0].firstChild.nodeValue,
-						'TxtLength' : xml.getElementsByTagName('TxtLength')[0].firstChild.nodeValue,
-						'TxtLengthValue' : xml.getElementsByTagName('TxtLengthValue')[0].firstChild.nodeValue,
-						'OwnerCommentVisible' : xml.getElementsByTagName('OwnerCommentVisible')[0].firstChild.nodeValue,
-						'SlashCommentVisible' : xml.getElementsByTagName('SlashCommentVisible')[0].firstChild.nodeValue,
-						'BSPCommentVisible' : xml.getElementsByTagName('BSPCommentVisible')[0].firstChild.nodeValue,
-						'Direction' : xml.getElementsByTagName('Direction')[0].firstChild.nodeValue,
-						'userBGColor' : xml.getElementsByTagName('userBGColor')[0].firstChild.nodeValue,
-						'userSkinName' : xml.getElementsByTagName('userSkinName')[0].firstChild.nodeValue
-					};
-					setTxtFormat(txtFormat);
-				},
-				error:function() {
-					alert("ロード失敗");
+				}
+				xhr.send();
+				return d.promise();
+			};
+			setlist.push(setaj2());
+			//両方読み込めたら合体
+			$.when.apply($, setlist).done(function(){
+				if((txtFormat['Date1']!=date1)||(exFormat['Date2']!=date2)){
+					setTxtFormat(Object.assign(txtFormat,exFormat));
+					date1=txtFormat['Date1'];
+					date2=exFormat['Date2'];
+					CommentWait = true;
+				}
+			}).fail(function(){
+				if(!SettingLoaded){
+					alert("設定のロードに失敗しました。\nsetting.xmlとsetting_ex.xmlがあるか\n確認してOKを押してください。");
 				}
 			});
 		}
@@ -223,29 +499,110 @@ function init() {
 	//デモ
 	function DemoFunc(){
 		if(SettingLoaded) {
-			var CGen = new CommentGenerator("コテハン", "コメント", HcgFormat, TxtFormat);
-			obj[CommentNow] = CGen;
-			stage.addChild(obj[CommentNow].getSkinImage());
-			stage.addChild(obj[CommentNow].getBGColorBar());
-			stage.addChild(obj[CommentNow].getEdgeCommentText());
-			stage.addChild(obj[CommentNow].getCommentText());
-			for(var i=CommentNow; i>(CommentNow-(HcgFormat['CommentMax']-1)); i--) {
-				if((i-1)>=0) {
-					obj[(i-1)].getSkinImage().y -= HcgFormat['SkinHeight'];
-					obj[(i-1)].getBGColorBar().y -= HcgFormat['SkinHeight'];
-					obj[(i-1)].getEdgeCommentText().y -= HcgFormat['SkinHeight'];
-					obj[(i-1)].getCommentText().y -= HcgFormat['SkinHeight'];
+			//放送主扱いを使う
+			var demoowner=Math.round( Math.random());
+			var n=demoowner ? "放送主":HcgFormat.demokote;
+			//本編
+			new CommentGenerator(n.slice(0), HcgFormat.democomment, HcgFormat, TxtFormat, demoowner, null, new Date())
+			  .then((CGen)=>{
+				obj[CommentNow] = CGen;
+				//表示開始
+				stage.addChild(obj[CommentNow].getBase());
+				obj[CommentNow].Play();
+				//移動処理
+				if(!TxtFormat['NewMove']){//通常
+					if ((TxtFormat['Direction'] == 3)&&(TxtFormat['moveF'] != '0')){
+						var Xmove = Number(TxtFormat['moveX']) * (1 + (Number(TxtFormat['c_nlX']) * obj[CommentNow].getLongline()));
+						var Ymove = Number(TxtFormat['moveY']) * (1 + (Number(TxtFormat['c_nlY']) * obj[CommentNow].getLongline()))+Number(TxtFormat['comSpace']);
+					}else{
+						var Xmove = 0;
+						if(TxtFormat['newLine'] == 4){
+							var Ymove = obj[CommentNow].textcomment.lineHeight*(1+obj[CommentNow].getLongline())+Number(TxtFormat['comSpace']);
+						}else if(TxtFormat['newLine'] == 5){
+							var Ymove = Number(HcgFormat['SkinHeight'])*(1+obj[CommentNow].getLongline())+Number(TxtFormat['comSpace']);
+						}else{
+							var Ymove = Number(HcgFormat['SkinHeight'])+Number(TxtFormat['comSpace']);
+						}
+					}
+					for(var i=CommentNow; i>(CommentNow-(HcgFormat['CommentMax']-1)); i--) {
+						if((i-1)>=0&&obj[(i-1)]!=null) {
+							if(TxtFormat['floated'] == 1){
+								if((TxtFormat['yReverse'] == 0)&&((TxtFormat['Direction'] != 3)||((TxtFormat['Direction'] == 3)&&(TxtFormat['moveF'] == '0')))){
+
+									obj[(i-1)].MoveAdd(Xmove, -Ymove, TxtFormat);
+								}else{
+									obj[(i-1)].MoveAdd(Xmove, Ymove, TxtFormat);
+								}
+							}else{
+								if(TxtFormat['yReverse'] == 0){
+									obj[(i-1)].PlateMove(Xmove, -Ymove);
+								}else{
+									obj[(i-1)].PlateMove(Xmove, Ymove);
+								}
+							}
+							if(TxtFormat['Alpha_Sub']){
+								if(TxtFormat['Direction'] != 3){
+									obj[i-1].SubAlpha(((TxtFormat['A_area']==0)?TxtFormat['Base_a']:100)/HcgFormat['CommentMax']);
+								}else{
+									obj[i-1].SubAlpha(TxtFormat['Sub_a']);
+								}
+							}
+						}
+					}
+				}else{//新しいコメントの方を移動
+					nowCount++;
+					if ((TxtFormat['Direction'] == 3)&&(TxtFormat['moveF'] != '0')){
+						var Xmove = Number(TxtFormat['moveX']) * (1 + (Number(TxtFormat['c_nlX']) * obj[CommentNow].getLongline()));
+						var Ymove = Number(TxtFormat['moveY']) * (1 + (Number(TxtFormat['c_nlY']) * obj[CommentNow].getLongline()))+Number(TxtFormat['comSpace']);
+						if(TxtFormat['Alpha_Sub']){
+							for(i=1;i<nowCount;i++){
+								obj[CommentNow-i].SubAlpha(((TxtFormat['A_area']==0)?TxtFormat['Base_a']:100)/HcgFormat['CommentMax']);
+							}
+						}
+					}else{
+						var Xmove = 0;
+						var bufline=0;
+						for(i=1;i<nowCount;i++){
+							bufline+=obj[CommentNow-i].getLongline()+1;
+							if(TxtFormat['Alpha_Sub']){
+								obj[CommentNow-i].SubAlpha(TxtFormat['Sub_a']);
+							}
+						}
+						if(TxtFormat['newLine'] == 4){
+							var Ymove = obj[CommentNow].textcomment.lineHeight*bufline+Number(TxtFormat['comSpace']);
+						}else if(TxtFormat['newLine'] == 5){
+							var Ymove = Number(HcgFormat['SkinHeight'])*(bufline)+Number(TxtFormat['comSpace']);
+						}else{
+							var Ymove = Number(HcgFormat['SkinHeight'])*(bufline)+Number(TxtFormat['comSpace']);
+						}
+					}
+					if(((TxtFormat['floated'] == 1)&&(TxtFormat['yReverse'] == 0)&&(TxtFormat['MoveF'] != 3))
+					  ||((TxtFormat['floated'] == 0)&&(TxtFormat['yReverse'] == 0))){
+						Ymove*=-1;
+					}
+					if((obj[CommentNow].getBline()+Ymove+Number(HcgFormat['SkinHeight'])*(Ymove>0?obj[CommentNow].getLongline()+1:-(obj[CommentNow].getLongline()+1))>HcgFormat['CanvasHeight'])||(obj[CommentNow].getBline()+Ymove<0)){
+						nowCount=1;
+						Ymove=0;
+					}
+					if(TxtFormat['floated'] == 1){
+						obj[CommentNow].MoveAdd(Xmove, Ymove, TxtFormat);
+					}else{
+						obj[CommentNow].PlateMove(Xmove, Ymove);
+					}
 				}
-			}
-		
-			if((CommentNow-HcgFormat['CommentMax'])>=0) {
-				stage.removeChild(obj[(CommentNow-HcgFormat['CommentMax'])].getSkinImage());
-				stage.removeChild(obj[(CommentNow-HcgFormat['CommentMax'])].getBGColorBar());
-				stage.removeChild(obj[(CommentNow-HcgFormat['CommentMax'])].getEdgeCommentText());
-				stage.removeChild(obj[(CommentNow-HcgFormat['CommentMax'])].getCommentText());
-				delete obj[(CommentNow-HcgFormat['CommentMax'])];
-			}
-			CommentNow++;
+				//削除処理
+				if(TxtFormat['TimeType'] != 1){
+					obj[CommentNow].setTimer(setTimeout(function(num){objDel(num)}.bind(null, CommentNow),(Number(TxtFormat['TimeValue'])+((((TxtFormat['F_out']==1)||(TxtFormat['Z_out']>0)||(TxtFormat['Direction']!=2))*3)*(30/HcgFormat['FrameRate'])*((0.1/Number((TxtFormat['Direction']=='3')?TxtFormat['outK']:HcgFormat['MoveSpeed']))*(TxtFormat['MovePattern']!=2)?1:2)))*1000));
+				}
+
+				if((CommentNow-HcgFormat['CommentMax'])>=0) {
+					if(obj[(CommentNow-HcgFormat['CommentMax'])]!=null){
+						clearTimeout(obj[(CommentNow-HcgFormat['CommentMax'])].getTimer());
+						objDel(CommentNow-HcgFormat['CommentMax']);
+					}
+				}
+				CommentNow++;
+			});
 		}
 	}
 	
@@ -271,21 +628,15 @@ function init() {
 			} else {
 				return false;
 			}
+		} else if(comment.match(/^[\s\0]+$/)) {
+			return false;
 		}
 		return true;
 	}
 	
 	//コメント処理
 	function fixComment(comment) {
-		if(comment.substring(0,11)=="/press show") {
-			//BSPコメント
-			var bsp_array = comment.split(" ");
-			var bsp = "";
-			for(var i=3; i<bsp_array.length; i++) {
-				bsp += bsp_array[i]+ " ";
-			}
-			comment = bsp;
-		} else if(comment.substring(0,5)=="/perm") {
+		if(comment.substring(0,5)=="/perm") {
 			//運営コメント(perm)
 			var perm_array = comment.split(" ");
 			var perm = "";
@@ -293,6 +644,48 @@ function init() {
 				perm += perm_array[i]+ " ";
 			}
 			comment = perm;
+		} else if(comment.substring(0,7)=="/nicoad") {
+			//運営コメント(広告)
+			var nicoad = comment.match(/\"message\"\:\"(.+)さんが([0-9]+)pt.+?(?:「(.+)」)?\"/i);
+			if(nicoad[3]){
+				comment = "広告:"+nicoad[1]+"さん("+nicoad[2]+"pt)"+"["+nicoad[3]+"]";
+			}else{
+				comment = "広告:"+nicoad[1]+"さん("+nicoad[2]+"pt)";
+			}
+		} else if(comment.substring(0,9)=="/uadpoint") {
+			//運営コメント(広告ポイント)
+			var nicoad_pt = comment.match(/(?:[0-9]+).+?([0-9]+)/i);
+			comment = "広告累計："+nicoad_pt[1]+"pt";
+		} else if(comment.substring(0,5)=="/info") {
+			//運営コメント(インフォ)
+			var nico_info = comment.match(/\/info [0-9]+ (.+)/i);
+			comment = nico_info[1];
+		} else if(comment.substring(0,4)=="/spi") {
+			//運営コメント(新市場)
+			var nico_neta = comment.match(/(「.+」){1,}が貼/i);
+			console.log(nico_neta);
+			comment = "ネタ台";
+			for(i=1;i<nico_neta.length;i++){
+				comment += nico_neta[i];
+			}
+			comment += "が追加";
+		} else if(comment.substring(0,4)=="/coe") {
+			//運営コメント(ゲーム起動)
+			var nico_appli = comment.match(/\/coe (?:start|stop) [0-9]+(?: \"(.+?)["_＿])?/i);
+			if(nico_appli[1]){
+				neta_name = nico_appli[1];
+				comment = neta_name+"を起動しました";
+			}else{
+				comment = neta_name+"が終了しました";
+			}
+		} else if(comment.substring(0,11)=="/press show") {
+			//BSPコメント
+			var bsp_array = comment.split(" ");
+			var bsp = "";
+			for(var i=3; i<bsp_array.length; i++) {
+				bsp += bsp_array[i]+ " ";
+			}
+			comment = bsp;
 		} else if(comment.substring(0,1)=="/") {
 			//運営コメント
 			comment = comment.substr(1);
@@ -308,6 +701,17 @@ function init() {
 		
 		return comment.trim();
 	}
+	
+	//消去処理
+	function objDel(num){
+		obj[num].stopper();
+		stage.removeChild(obj[num].Remove());
+		delete obj[num];
+		if(num+nowCount>=CommentNow){
+			nowCount=0;
+		}
+	};
+	});
 }
 </script>
 </head>

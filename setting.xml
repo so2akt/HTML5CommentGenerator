@@ -8,23 +8,23 @@
   <NoHandleName>
   </NoHandleName>
   <TxtColor>ffffff</TxtColor>
-  <TxtFont>'Meiryo UI'</TxtFont>
-  <TxtFontIndex>287</TxtFontIndex>
-  <TxtSize>15</TxtSize>
+  <TxtFont>'Noto Sans JP'</TxtFont>
+  <TxtFontIndex>347</TxtFontIndex>
+  <TxtSize>25</TxtSize>
   <BgColor>000000</BgColor>
   <BgColorType>0</BgColorType>
   <TxtEdgeColor>000000</TxtEdgeColor>
   <TxtEdgeType>1</TxtEdgeType>
-  <TxtEdgeValue>5</TxtEdgeValue>
+  <TxtEdgeValue>3</TxtEdgeValue>
   <SkinType>1</SkinType>
-  <SkinFile>C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_00_basic.png</SkinFile>
+  <SkinFile>C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_01_nico.png</SkinFile>
   <SkinFolder>
   </SkinFolder>
-  <TimeType>0</TimeType>
+  <TimeType>1</TimeType>
   <TimeValue>10</TimeValue>
-  <TxtUpSpace>5</TxtUpSpace>
+  <TxtUpSpace>0</TxtUpSpace>
   <TxtLeftSpace>35</TxtLeftSpace>
-  <TxtLength>470</TxtLength>
+  <TxtLength>265</TxtLength>
   <TxtLengthValue>...</TxtLengthValue>
   <Direction>2</Direction>
   <OwnerCommentVisible>1</OwnerCommentVisible>
@@ -32,10 +32,10 @@
   <BSPCommentVisible>0</BSPCommentVisible>
   <userBGColor>0</userBGColor>
   <userSkinName>0</userSkinName>
-  <nico_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_01_nico.png">
+  <nico_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_01_nico_316x32.png">
   </nico_name>
-  <youtube_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_02_youtube.png">
+  <youtube_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_02_youtube_316x32.png">
   </youtube_name>
-  <twitch_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_03_twitch.png">
+  <twitch_name Skin="C:\comment-viewer-misc\HTML5CommentGenerator\skins\skins_03_twitch_316x32.png">
   </twitch_name>
 </setting>

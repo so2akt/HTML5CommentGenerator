@@ -1,14 +1,14 @@
 <setting>
-  <FrameRate>30</FrameRate>
-  <CanvasWidth>512</CanvasWidth>
-  <CanvasHeight>300</CanvasHeight>
-  <CommentMax>3</CommentMax>
+  <FrameRate>60</FrameRate>
+  <CanvasWidth>316</CanvasWidth>
+  <CanvasHeight>896</CanvasHeight>
+  <CommentMax>28</CommentMax>
   <LoadInterbal>500</LoadInterbal>
   <SkinHeight>32</SkinHeight>
-  <SkinWidth>512</SkinWidth>
-  <LineLimit>3</LineLimit>
+  <SkinWidth>316</SkinWidth>
+  <LineLimit>5</LineLimit>
   <AnimeSpeed>0.5</AnimeSpeed>
-  <ComStart xml:space="preserve">:</ComStart>
+  <ComStart xml:space="preserve">: </ComStart>
   <ComEnd>
   </ComEnd>
   <VL>0</VL>

@@ -9,7 +9,7 @@
   <NewLine>5</NewLine>
   <NLset>0</NLset>
   <CommentSpace>0</CommentSpace>
-  <LineHeight>2</LineHeight>
+  <LineHeight>5</LineHeight>
   <TypeTime>0</TypeTime>
   <OwnerColor>FFFFFF</OwnerColor>
   <In X="0" Y="512">0.1</In>
@@ -18,7 +18,7 @@
   <Move X="0" c_nlX="0" Y="32" c_nlY="0">0</Move>
   <MovePattern>0</MovePattern>
   <NewMove>0</NewMove>
-  <HandleLimit>200</HandleLimit>
+  <HandleLimit>265</HandleLimit>
   <HandleTrim>…</HandleTrim>
   <ComNL>1</ComNL>
   <SiteName>-1</SiteName>

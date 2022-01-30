@@ -2,7 +2,7 @@
 Copyright (c) 2015 Takayasu Machimura (kilin)
 This software is released under the MIT License.
 */
-//ver 0.0.7改95
+//ver 0.0.7改96
 function CommentGenerator(Handle, Comment, hcgFormat, txtFormat, owner, service, timestamp)
 {
 	this.timer;
@@ -672,19 +672,28 @@ function CommentGenerator(Handle, Comment, hcgFormat, txtFormat, owner, service,
 		if(TxtFormat['MovePattern'] == 1){
 			this.target.my=(this.target.y+this.base.line-this.base.y)/(HcgFormat['FrameRate']*0.25)*this.target.k;
 			this.target.mx=(this.target.x-this.base.x)/(HcgFormat['FrameRate']*0.25)*this.target.k;
-		}else if(TxtFormat['MovePattern'] == 2){
+		}else if((TxtFormat['MovePattern'] == 2)||(TxtFormat['MovePattern'] == 3)){
+			if(TxtFormat['MovePattern'] == 3) this.tr = Math.atan2((this.target.y+this.moveY)-(this.base.y-this.base.line),(this.target.x+this.moveX)-this.base.x);
 			if(this.base.y != (this.target.y + this.base.line)){
-				this.target.by = (this.base.y<(this.target.y + this.base.line))?this.accel*this.target.k:-this.accel*this.target.k;
+				if(TxtFormat['MovePattern']==2){
+					this.target.by = (this.base.y<(this.target.y + this.base.line + this.moveY))?this.accel*this.target.k:-this.accel*this.target.k;
+				}else{
+					this.target.by = this.accel*this.target.k*Math.sin(this.tr);
+				}
 			}else{
 				this.target.by = 0;
 			}
 			if(this.base.x != this.target.x){
-				this.target.bx = (this.base.x<this.target.x)?this.accel*this.target.k:-this.accel*this.target.k;
+				if(TxtFormat['MovePattern']==2){
+					this.target.bx = (this.base.x<(this.target.x + this.moveX))?this.accel*this.target.k:-this.accel*this.target.k;
+				}else{
+					this.target.bx = this.accel*this.target.k*Math.cos(this.tr);
+				}
 			}else{
 				this.target.bx = 0;
 			}
-			this.target.my = this.target.by;
-			this.target.mx = this.target.bx;
+			this.target.my = this.target.by*1;
+			this.target.mx = this.target.bx*1;
 		}
 		//コメント表示アニメーション
 		CommentAnimation = (function() {
@@ -708,6 +717,7 @@ function CommentGenerator(Handle, Comment, hcgFormat, txtFormat, owner, service,
 					}
 					break;
 				case 2:
+				case 3:
 					if((((this.target.by>0) && ((Math.round(this.base.y)+Math.round(this.target.my))<=(this.target.y+this.base.line+this.moveY))))
 					  ||(((this.target.by<0) && ((Math.round(this.base.y)+Math.round(this.target.my))>=(this.target.y+this.base.line+this.moveY))))){
 						this.base.y += this.target.my;
@@ -717,7 +727,11 @@ function CommentGenerator(Handle, Comment, hcgFormat, txtFormat, owner, service,
 						this.target.my = (this.target.my * -this.brake) + this.target.by;
 					}else{
 						if(this.base.y!=(this.target.y+this.base.line+this.moveY)){
-							this.target.by = (this.base.y<(this.target.y + this.base.line + this.moveY))?this.accel*this.target.k:-this.accel*this.target.k;
+							if(TxtFormat['MovePattern']==2){
+								this.target.by = (this.base.y<(this.target.y+this.base.line+this.moveY))?this.accel*this.target.k:-this.accel*this.target.k;
+							}else{
+								this.target.by = this.accel*this.target.k*Math.sin(Math.atan2((this.target.y+this.moveY)-(this.base.y-this.base.line),(this.target.x+this.moveX)-this.base.x));
+							}
 							this.target.my = this.target.by;
 						}else{
 							this.base.y = this.target.y+this.base.line+this.moveY;
@@ -733,7 +747,11 @@ function CommentGenerator(Handle, Comment, hcgFormat, txtFormat, owner, service,
 						this.target.mx = (this.target.mx * -this.brake) + this.target.bx;
 					}else{
 						if((this.base.x!=(this.target.x+this.moveX))){
-							this.target.bx = (this.base.x<this.target.x)?this.accel*this.target.k:-this.accel*this.target.k;
+							if(TxtFormat['MovePattern']==2){
+								this.target.bx = (this.base.x<this.target.x+this.moveX)?this.accel*this.target.k:-this.accel*this.target.k;
+							}else{
+								this.target.bx = this.accel*this.target.k*Math.cos(Math.atan2((this.target.y+this.moveY)-(this.base.y-this.base.line),(this.target.x+this.moveX)-this.base.x));
+							}
 							this.target.mx = this.target.bx;
 						}else{
 							this.base.x = this.target.x+this.moveX;
@@ -805,7 +823,6 @@ function CommentGenerator(Handle, Comment, hcgFormat, txtFormat, owner, service,
 		}).bind(this);
 		//インアウトアニメーションの切り替え
 		animeswitch = (function() {
-			delete this.animetimer;
 			if(TxtFormat['TimeType'] !=1){
 				if(TxtFormat['F_out']){
 					this.fout_tick = createjs.Ticker.addEventListener('tick', fade_Out.bind(this));
@@ -857,24 +874,32 @@ function CommentGenerator(Handle, Comment, hcgFormat, txtFormat, owner, service,
 					}else{
 						this.target.mx=(this.target.x+this.moveX-this.base.x)/(HcgFormat['FrameRate']*0.25)*this.target.k;
 					}
-				}else if(TxtFormat['MovePattern'] == 2){
-					if(this.base.y != (this.target.y + this.base.line)){
-						this.target.by = (this.base.y<this.target.y)?this.accel*this.target.k:-this.accel*this.target.k;
+				}else if((TxtFormat['MovePattern'] == 2)||(TxtFormat['MovePattern'] == 3)){
+					if(TxtFormat['MovePattern'] == 3) this.tr = Math.atan2((this.target.y+this.moveY)-(this.base.y-this.base.line),(this.target.x+this.moveX)-this.base.x+this.moveX);
+					if(this.base.y != (this.target.y+this.base.line+this.moveY)){
+						if(TxtFormat['MovePattern']==2){
+							this.target.by = (this.base.y<(this.target.y+this.base.line+this.moveY))?this.accel*this.target.k:-this.accel*this.target.k;
+						}else{
+							this.target.by = this.accel*this.target.k*Math.sin(this.tr);
+						}
 					}else{
 						this.target.by = 0;
 					}
-					if(this.base.x != this.target.x){
-						this.target.bx = (this.base.x<this.target.x)?this.accel*this.target.k:-this.accel*this.target.k;
+					if(this.base.x != (this.target.x+this.moveX)){
+						if(TxtFormat['MovePattern'] == 3) this.tr = Math.atan2((this.target.y+this.moveY)-(this.base.y-this.base.line),(this.target.x+this.moveX)-this.base.x);
+						if(TxtFormat['MovePattern']==2){
+							this.target.bx = (this.base.x<(this.target.x+this.moveX))?this.accel*this.target.k:-this.accel*this.target.k;
+						}else{
+							this.target.bx = this.accel*this.target.k*Math.cos(this.tr);
+						}
 					}else{
 						this.target.bx = 0;
 					}
 					this.target.my = this.target.by;
 					this.target.mx = this.target.bx;
 				}
+				delete this.animetimer;
 			}else{
-				if(TxtFormat['floated'] != 1){
-					createjs.Ticker.removeEventListener('tick', this.anim);
-				}
 			}
 		}).bind(this);
 
@@ -1249,9 +1274,25 @@ CommentGenerator.prototype.MoveAdd = function(movX,movY,TxtFormat){
 	}else{
 		this.moveY += movY;
 	}
-	if(TxtFormat['floated'] == 1){
+	if(TxtFormat['MovePattern'] == 1){
 		this.target.my+=movY/(createjs.Ticker.framerate*0.25)*this.target.k;
 		this.target.mx+=movX/(createjs.Ticker.framerate*0.25)*this.target.k;
+	}else if((TxtFormat['MovePattern'] == 2)||(TxtFormat['MovePattern'] == 3)){
+		if(TxtFormat['MovePattern'] == 3) this.tr = Math.atan2((this.target.y+this.moveY)-(this.base.y-this.base.line),(this.target.x+this.moveX)-this.base.x+this.moveX);
+		if(this.base.y != (this.target.y+this.base.line+this.moveY)){
+			if(TxtFormat['MovePattern']==2){
+				this.target.by = (this.base.y<(this.target.y+this.base.line+this.moveY))?this.accel*this.target.k:-this.accel*this.target.k;
+			}else{
+				this.target.by = this.accel*this.target.k*Math.sin(this.tr);
+			}
+		}
+		if(this.base.x != (this.target.x + this.moveX)){
+			if(TxtFormat['MovePattern']==2){
+				this.target.bx = (this.base.x<(this.target.x+this.moveX))?this.accel*this.target.k:-this.accel*this.target.k;
+			}else{
+				this.target.bx = this.accel*this.target.k*Math.cos(this.tr);
+			}
+		}
 	}
 };
 //追加で移動

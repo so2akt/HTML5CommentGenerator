@@ -1,5 +1,5 @@
 <setting>
-  <CheckVersion>0.9.5.6</CheckVersion>
+  <CheckVersion>0.9.6.0</CheckVersion>
   <HcgPath>C:\comment-viewer-misc\HTML5CommentGenerator</HcgPath>
   <HandleVisible>1</HandleVisible>
   <NoHandleType>1</NoHandleType>

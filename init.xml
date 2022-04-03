@@ -1,8 +1,8 @@
 <setting>
   <FrameRate>60</FrameRate>
   <CanvasWidth>316</CanvasWidth>
-  <CanvasHeight>540</CanvasHeight>
-  <CommentMax>16</CommentMax>
+  <CanvasHeight>720</CanvasHeight>
+  <CommentMax>22</CommentMax>
   <LoadInterbal>500</LoadInterbal>
   <SkinHeight>32</SkinHeight>
   <SkinWidth>316</SkinWidth>
